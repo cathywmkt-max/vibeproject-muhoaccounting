@@ -208,6 +208,13 @@
         }
 
         /* 訂單列表開關按鈕樣式 */
+        .order-buttons-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
         .toggle-order-list {
             background-color: #CA8E82;
             color: white;
@@ -215,7 +222,15 @@
             padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
-            margin-top: 20px;
+        }
+        
+        .fix-timestamp-btn {
+            background-color: #795548;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
         }
 
         .order-list-container {
@@ -415,9 +430,6 @@
                 return `<span class="${colorClass}">${sign} ${Math.abs(percentage).toFixed(2)}%</span>`;
             };
 
-            // 偵錯訊息：在發送查詢前，先印出要查詢的月份字串
-            console.log(`正在查詢的月份: ${currentMonthStr}`);
-
             // 查詢當月資料並依據 timestamp 降序排列 (最新到最舊)
             const qCurrent = query(recordsCol, where("month", "==", currentMonthStr), orderBy("timestamp", "desc"));
             onSnapshot(qCurrent, (currentSnapshot) => {
@@ -566,6 +578,32 @@
             });
             editModal.style.display = 'none';
         };
+        
+        // 新增的修復時間戳記函式
+        const fixTimestamps = async () => {
+            const currentMonthStr = formatDate(displayMonth, false);
+            const q = query(recordsCol, where("month", "==", currentMonthStr));
+            const snapshot = await getDocs(q);
+            
+            let fixedCount = 0;
+            snapshot.forEach(async (doc) => {
+                const data = doc.data();
+                const recordDate = new Date(data.date);
+                // 檢查 timestamp 是否早於日期
+                if (data.timestamp.toDate() < recordDate) {
+                    await updateDoc(doc.ref, {
+                        timestamp: new Date()
+                    });
+                    fixedCount++;
+                }
+            });
+            
+            // 刷新列表
+            updateStats(displayMonth);
+            // 提醒使用者修復完成
+            alert(`已修復 ${fixedCount} 筆異常訂單的時間戳記！`);
+        };
+
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('entry-date').value = formatDate(new Date());
@@ -595,6 +633,9 @@
                 button.innerText = '隱藏當月所有訂單';
             }
         });
+
+        // 修復訂單按鈕事件
+        document.getElementById('fix-timestamps-btn').addEventListener('click', fixTimestamps);
 
         // 編輯彈窗按鈕事件
         document.querySelector('#editModal .close-btn').addEventListener('click', () => editModal.style.display = 'none');
@@ -755,7 +796,10 @@
             </div>
         </div>
 
-        <button id="toggle-order-list-btn" class="toggle-order-list">查看當月所有訂單</button>
+        <div class="order-buttons-container">
+            <button id="toggle-order-list-btn" class="toggle-order-list">查看當月所有訂單</button>
+            <button id="fix-timestamps-btn" class="fix-timestamps-btn">修復異常訂單</button>
+        </div>
         <div id="order-list-container" class="order-list-container">
             <div id="order-list">
                 <!-- 訂單明細會動態載入到這裡 -->
