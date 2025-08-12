@@ -376,7 +376,8 @@
         let displayMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
 
         const formatDate = (date) => `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-        const formatMonth = (date) => `${date.getFullYear()}-${date.getMonth() + 1}`;
+        // 修正後的 formatMonth 函式，確保月份格式有補零
+        const formatMonth = (date) => `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
 
         // 彈窗相關變數
         const editModal = document.getElementById('editModal');
