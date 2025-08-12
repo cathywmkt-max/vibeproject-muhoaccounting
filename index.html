@@ -355,7 +355,10 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, addDoc, query, where, onSnapshot, doc, deleteDoc, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // 請在這裡貼上您的 Firebase 專案設定程式碼
+        // =========================================================
+        //  請在這裡貼上您的 Firebase 專案設定程式碼！
+        //  請務必從 Firebase Console 的「專案設定」中複製。
+        // =========================================================
         const firebaseConfig = {
   apiKey: "AIzaSyBOitrzS23T83R0TNBUM0WpnStotTBuyAg",
   authDomain: "massage-studio-accounting.firebaseapp.com",
@@ -365,6 +368,7 @@
   appId: "1:304652442672:web:fb833a5084edf8087161f5",
   measurementId: "G-VP4M1FBR0G"
 };
+        // =========================================================
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -392,7 +396,6 @@
         let currentDocId = null;
 
         const updateStats = (month) => {
-            // 修正為不補零的月份格式
             const currentMonthStr = formatDate(month, false);
             document.getElementById('current-month-display').innerText = currentMonthStr;
 
@@ -404,7 +407,6 @@
                 nextBtn.disabled = false;
             }
 
-            // 處理成長比較文字的顯示
             const formatComparisonText = (currentValue, prevValue) => {
                 if (prevValue === null || prevValue === 0) {
                     return `無上月資料`;
@@ -415,10 +417,8 @@
                 return `<span class="${colorClass}">${sign} ${Math.abs(percentage).toFixed(2)}%</span>`;
             };
 
-            // 偵錯訊息：在發送查詢前，先印出要查詢的月份字串
-            console.log(`正在查詢的月份: ${currentMonthStr}`);
-
-            // 查詢當月資料並依據 date 降序排列 (最新到最舊)
+            // 修正：現在查詢會依據 month 和 date 兩個欄位來排序
+            // 如果在開發者工具看到關於缺少索引的錯誤，請依照提示到 Firebase Console 中建立複合索引
             const qCurrent = query(recordsCol, where("month", "==", currentMonthStr), orderBy("date", "desc"));
             onSnapshot(qCurrent, (currentSnapshot) => {
                 let totalAmount = 0;
@@ -428,7 +428,6 @@
                 let oldCount = 0;
                 const totalEntries = currentSnapshot.docs.length;
 
-                // 渲染訂單列表
                 const orderListContainer = document.getElementById('order-list');
                 orderListContainer.innerHTML = '';
                 currentSnapshot.forEach((doc) => {
@@ -461,7 +460,6 @@
                 document.getElementById('monthly-total').innerText = totalAmount.toLocaleString() + ' 元';
                 document.getElementById('total-appointments').innerText = totalEntries;
 
-                // 更新男女比比例條
                 const maleRatio = totalEntries > 0 ? ((maleCount / totalEntries) * 100) : 0;
                 const femaleRatio = 100 - maleRatio;
                 document.getElementById('gender-ratio-bar-male').style.width = `${maleRatio}%`;
@@ -469,7 +467,6 @@
                 document.getElementById('gender-ratio-bar-female').style.width = `${femaleRatio}%`;
                 document.getElementById('gender-ratio-bar-female').innerText = femaleRatio > 0 ? `${femaleRatio.toFixed(0)}%` : '';
 
-                // 更新新舊客比比例條
                 const newRatio = totalEntries > 0 ? ((newCount / totalEntries) * 100) : 0;
                 const oldRatio = 100 - newRatio;
                 document.getElementById('customer-ratio-bar-new').style.width = `${newRatio}%`;
@@ -477,7 +474,6 @@
                 document.getElementById('customer-ratio-bar-old').style.width = `${oldRatio}%`;
                 document.getElementById('customer-ratio-bar-old').innerText = oldRatio > 0 ? `${oldRatio.toFixed(0)}%` : '';
                 
-                // 綁定編輯和刪除按鈕的事件
                 document.querySelectorAll('.delete-btn').forEach(btn => {
                     btn.addEventListener('click', handleDeleteClick);
                 });
@@ -485,7 +481,6 @@
                     btn.addEventListener('click', handleEditClick);
                 });
 
-                // 查詢上個月的資料以進行比較
                 const prevMonth = new Date(month.getFullYear(), month.getMonth() - 1, 1);
                 const prevMonthStr = formatDate(prevMonth, false);
                 const qPrev = query(recordsCol, where("month", "==", prevMonthStr));
@@ -558,7 +553,7 @@
             
             await updateDoc(doc(db, "records", currentDocId), {
                 amount: parseInt(newAmount),
-                date: newDate, // 這裡儲存的日期會是 YYYY-MM-DD 格式
+                date: newDate,
                 gender: newGender,
                 customerType: newCustomerType,
                 notes: newNotes,
@@ -661,7 +656,7 @@
                     notes: notes,
                     timestamp: new Date(),
                     date: date, // 這裡儲存的日期會是 YYYY-MM-DD 格式
-                    month: recordMonth
+                    month: recordMonth // 儲存 YYYY-MM 格式以方便篩選
                 });
                 
                 // 清空輸入欄位
