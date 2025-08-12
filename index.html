@@ -419,7 +419,7 @@
             console.log(`正在查詢的月份: ${currentMonthStr}`);
 
             // 查詢當月資料並依據 timestamp 降序排列 (最新到最舊)
-            const qCurrent = query(recordsCol, where("month", "==", currentMonthStr), orderBy("timestamp", "desc"));
+            const qCurrent = query(recordsCol, where("month", "==", currentMonthStr), orderBy("date", "desc"));
             onSnapshot(qCurrent, (currentSnapshot) => {
                 let totalAmount = 0;
                 let maleCount = 0;
