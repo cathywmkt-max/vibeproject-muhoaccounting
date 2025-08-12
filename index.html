@@ -415,8 +415,12 @@
                 return `<span class="${colorClass}">${sign} ${Math.abs(percentage).toFixed(2)}%</span>`;
             };
 
-            // 查詢當月資料並依據 timestamp 降序排列 (最新到最舊)
-            const qCurrent = query(recordsCol, where("month", "==", currentMonthStr), orderBy("timestamp", "desc"));
+            // 偵錯訊息：在發送查詢前，先印出要查詢的月份字串
+            console.log(`正在查詢的月份: ${currentMonthStr}`);
+
+            // 查詢當月資料並依據 timestamp 升序排列 (最舊到最新)
+            // 這邊是為了符合使用者希望最舊的資料在最上面的要求，將 'desc' 改為 'asc'
+            const qCurrent = query(recordsCol, where("month", "==", currentMonthStr), orderBy("timestamp", "asc"));
             onSnapshot(qCurrent, (currentSnapshot) => {
                 let totalAmount = 0;
                 let maleCount = 0;
@@ -550,7 +554,9 @@
                 return;
             }
 
-            const newRecordMonth = formatDate(new Date(newDate), false);
+            const newRecordDate = new Date(newDate);
+            const newRecordMonth = formatDate(newRecordDate, false);
+            
             await updateDoc(doc(db, "records", currentDocId), {
                 amount: parseInt(newAmount),
                 date: newDate,
