@@ -428,36 +428,38 @@
                 let oldCount = 0;
                 const totalEntries = currentSnapshot.docs.length;
 
-               // 渲染訂單列表
-const orderListContainer = document.getElementById('order-list');
-orderListContainer.innerHTML = '';
-currentSnapshot.forEach((doc) => {
-    const data = doc.data();
-    totalAmount += data.amount;
-    if (data.gender === '男性') maleCount++;
-    if (data.gender === '女性') femaleCount++;
-    if (data.customerType === '新客') newCount++;
-    if (data.customerType === '舊客') oldCount++;
+                // 渲染訂單列表
+                const orderListContainer = document.getElementById('order-list');
+                orderListContainer.innerHTML = '';
+                currentSnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    totalAmount += data.amount;
+                    if (data.gender === '男性') maleCount++;
+                    if (data.gender === '女性') femaleCount++;
+                    if (data.customerType === '新客') newCount++;
+                    if (data.customerType === '舊客') oldCount++;
 
-    const notesHtml = data.notes ? `<p style="margin-top: 5px; color: #888;">備註: ${data.notes}</p>` : '';
+                    const notesHtml = data.notes ? `<p style="margin-top: 5px; color: #888;">備註: ${data.notes}</p>` : '';
 
-    const orderItem = document.createElement('div');
-    orderItem.classList.add('order-item');
-    orderItem.innerHTML = `
-        <div class="order-details">
-            <strong>金額: ${data.amount.toLocaleString()} 元</strong>
-            <span>日期: ${data.date}</span>
-            <span>性別: ${data.gender} | 客群: ${data.customerType}</span>
-            ${notesHtml}
-        </div>
-    `;
-    orderListContainer.appendChild(orderItem);
-});
+                    const orderItem = document.createElement('div');
+                    orderItem.classList.add('order-item');
+                    orderItem.innerHTML = `
+                        <div class="order-details">
+                            <strong>金額: ${data.amount.toLocaleString()} 元</strong>
+                            <span>日期: ${data.date}</span>
+                            <span>性別: ${data.gender} | 客群: ${data.customerType}</span>
+                            ${notesHtml}
+                        </div>
+                        <div class="order-actions">
+                            <button class="edit-btn" data-id="${doc.id}">編輯</button>
+                            <button class="delete-btn" data-id="${doc.id}">刪除</button>
+                        </div>
+                    `;
+                    orderListContainer.appendChild(orderItem);
+                });
 
-// === 將您要新增的程式碼加在這裡 ===
-document.getElementById('gender-counts').innerText = `男 ${maleCount} / 女 ${femaleCount}`;
-document.getElementById('customer-counts').innerText = `新客 ${newCount} / 舊客 ${oldCount}`;
-// =============================
+                document.getElementById('monthly-total').innerText = totalAmount.toLocaleString() + ' 元';
+                document.getElementById('total-appointments').innerText = totalEntries;
 
                 // 更新男女比比例條
                 const maleRatio = totalEntries > 0 ? ((maleCount / totalEntries) * 100) : 0;
@@ -736,25 +738,22 @@ document.getElementById('customer-counts').innerText = `新客 ${newCount} / 舊
             
             <!-- 男女佔比比例條 -->
             <div class="stat-item">
-    <div style="display:flex; flex-direction: column;">
-        <span class="stat-label">男女佔比：</span>
-        <span class="ratio-text" id="gender-counts"></span>  <!-- 就在這裡 -->
-    </div>
-    <div class="ratio-bar-container">
-        ...
-    </div>
-</div>
+                <span class="stat-label">男女佔比：</span>
+                <div class="ratio-bar-container">
+                    <div id="gender-ratio-bar-male" class="ratio-bar"></div>
+                    <div id="gender-ratio-bar-female" class="ratio-bar" style="background-color: #EAE3DD; color: #CA8E82;"></div>
+                </div>
+            </div>
             
             <!-- 新舊客比比例條 -->
             <div class="stat-item">
-    <div style="display:flex; flex-direction: column;">
-        <span class="stat-label">新舊客比：</span>
-        <span class="ratio-text" id="customer-counts"></span>  <!-- 就在這裡 -->
-    </div>
-    <div class="ratio-bar-container">
-        ...
-    </div>
-</div>
+                <span class="stat-label">新舊客比：</span>
+                <div class="ratio-bar-container">
+                    <div id="customer-ratio-bar-new" class="ratio-bar"></div>
+                    <div id="customer-ratio-bar-old" class="ratio-bar" style="background-color: #EAE3DD; color: #CA8E82;"></div>
+                </div>
+            </div>
+        </div>
 
         <button id="toggle-order-list-btn" class="toggle-order-list">查看當月所有訂單</button>
         <div id="order-list-container" class="order-list-container">
